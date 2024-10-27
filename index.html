@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>สุ่มรางวัลสุดพิเศษ</title>
+  <title>สุ่มของแถมสุดพิเศษ</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
@@ -105,23 +105,23 @@
 </head>
 <body>
   <div class="prize-container animate__animated animate__fadeIn">
-    <h2>✨ สุ่มรางวัลสุดพิเศษ ✨</h2>
-    <p>กดปุ่มด้านล่างเพื่อลุ้นรับรางวัลสุดพิเศษ!</p>
-    <button class="btn-start" onclick="startDraw()">เริ่มสุ่มรางวัล</button>
+    <h2>✨ สุ่มของแถมสุดพิเศษ ✨</h2>
+    <p>กดปุ่มด้านล่างเพื่อลุ้นรับของแถมสุดพิเศษ!</p>
+    <button class="btn-start" onclick="startDraw()">เริ่มสุ่มของแถม</button>
     <div id="loading" class="loading-container">
       <div class="loading-spinner"></div>
-      <p class="loading-text">กำลังสุ่มรางวัล...</p>
+      <p class="loading-text">กำลังสุ่มของแถม...</p>
     </div>
   </div>
 
   <script>
     const prizes = [
-      { name: "กาแฟ", img: "https://bucket.ex10.tech/images/bb2a6420-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
-      { name: "ยาสีฟัน", img: "https://bucket.ex10.tech/images/d02291b0-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
-      { name: "วิตามินซี", img: "https://bucket.ex10.tech/images/e38980bc-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
-      { name: "โกโก้", img: "https://bucket.ex10.tech/images/23a73c5c-9429-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
-      { name: "คอลลาเจน", img: "https://bucket.ex10.tech/images/f247dfd8-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
-      { name: "ครีมกันแดด", img: "https://bucket.ex10.tech/images/1665c450-9429-11ef-ab4d-0242ac12000e/originalContentUrl.png" }
+      { name: "กาแฟ\nมูลค่า 299.-", img: "https://bucket.ex10.tech/images/bb2a6420-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
+      { name: "ยาสีฟัน\nมูลค่า 299.-", img: "https://bucket.ex10.tech/images/d02291b0-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
+      { name: "วิตามินซี\nมูลค่า 299.-", img: "https://bucket.ex10.tech/images/e38980bc-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
+      { name: "โกโก้\nมูลค่า 399.-", img: "https://bucket.ex10.tech/images/23a73c5c-9429-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
+      { name: "คอลลาเจน\nมูลค่า 599.-", img: "https://bucket.ex10.tech/images/f247dfd8-9428-11ef-ab4d-0242ac12000e/originalContentUrl.png" },
+      { name: "ครีมกันแดด\nมูลค่า 699.-", img: "https://bucket.ex10.tech/images/1665c450-9429-11ef-ab4d-0242ac12000e/originalContentUrl.png" }
     ];
 
     let isDrawing = false;
