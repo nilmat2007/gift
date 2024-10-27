@@ -6,6 +6,7 @@
   <title>สุ่มของแถมสุดพิเศษ</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
 
@@ -49,7 +50,7 @@
       margin-bottom: 2rem;
     }
 
-    .btn-start {
+    .btn-start, .btn-login {
       background: linear-gradient(45deg, #667eea, #764ba2);
       color: white;
       border: none;
@@ -59,14 +60,15 @@
       cursor: pointer;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       font-weight: 500;
+      margin: 0.5rem;
     }
 
-    .btn-start:hover {
+    .btn-start:hover, .btn-login:hover {
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
     }
 
-    .btn-start:active {
+    .btn-start:active, .btn-login:active {
       transform: translateY(0);
     }
 
@@ -101,13 +103,26 @@
       border-radius: 15px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
+
+    #userInfo {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="prize-container animate__animated animate__fadeIn">
+    <h2>✨ กิจกรรม ✨</h2>
     <h2>✨ สุ่มของแถมสุดพิเศษ ✨</h2>
+    <div id="userInfo">
+      <p>ยินดีต้อนรับคุณ <span id="userName"></span></p>
+    </div>
     <p>กดปุ่มด้านล่างเพื่อลุ้นรับของแถมสุดพิเศษ!</p>
-    <button class="btn-start" onclick="startDraw()">เริ่มสุ่มของแถม</button>
+    <button id="btnLogin" class="btn-login">เข้าสู่ระบบด้วย LINE</button>
+    <button class="btn-start" onclick="startDraw()" style="display: none;">เริ่มสุ่มของแถม</button>
     <div id="loading" class="loading-container">
       <div class="loading-spinner"></div>
       <p class="loading-text">กำลังสุ่มของแถม...</p>
@@ -125,9 +140,49 @@
     ];
 
     let isDrawing = false;
+    let userProfile = null;
+    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxBTkjDqADWj9AA5ijCDQPYsbyZ_rQh_4rbvpGMfqdHkq-E2cv00cWJd9UdvnVEdnkmFA/exec';
 
-    function startDraw() {
-      if (isDrawing) return;
+    async function initializeLiff() {
+      try {
+        await liff.init({ liffId: '2005615503-gaGNRZQp' });
+        if (liff.isLoggedIn()) {
+          showLoggedInUI();
+        }
+        document.getElementById('btnLogin').onclick = login;
+      } catch (err) {
+        console.error('LIFF Initialization failed', err);
+      }
+    }
+
+    async function login() {
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      }
+    }
+
+    async function showLoggedInUI() {
+      try {
+        userProfile = await liff.getProfile();
+        document.getElementById('userName').textContent = userProfile.displayName;
+        document.getElementById('userInfo').style.display = 'block';
+        document.getElementById('btnLogin').style.display = 'none';
+        document.querySelector('.btn-start').style.display = 'inline-block';
+        
+        // Check if user has already participated
+        const response = await fetch(`${WEBAPP_URL}?action=checkParticipation&userId=${userProfile.userId}`);
+        const data = await response.json();
+        if (data.hasParticipated) {
+          document.querySelector('.btn-start').disabled = true;
+          document.querySelector('.btn-start').textContent = 'คุณได้ร่วมกิจกรรมแล้ว';
+        }
+      } catch (err) {
+        console.error('Error getting user profile', err);
+      }
+    }
+
+    async function startDraw() {
+      if (isDrawing || !userProfile) return;
       isDrawing = true;
 
       const button = document.querySelector('.btn-start');
@@ -136,12 +191,12 @@
 
       document.getElementById('loading').style.display = 'flex';
       
-      setTimeout(() => {
+      setTimeout(async () => {
         const randomIndex = Math.floor(Math.random() * prizes.length);
         const prize = prizes[randomIndex];
         document.getElementById('loading').style.display = 'none';
         
-        Swal.fire({
+        const result = await Swal.fire({
           title: '🎉 ยินดีด้วย! 🎉',
           html: `<div class="animate__animated animate__bounceIn">
                   <h2>คุณได้รับรางวัล:</h2>
@@ -160,13 +215,53 @@
           hideClass: {
             popup: 'animate__animated animate__fadeOutDown'
           }
-        }).then(() => {
-          isDrawing = false;
-          button.style.opacity = '1';
-          button.style.cursor = 'pointer';
         });
+
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch(WEBAPP_URL, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId: userProfile.userId,
+                displayName: userProfile.displayName,
+                pictureUrl: userProfile.pictureUrl,
+                prizeName: prize.name,
+                prizeImage: prize.img,
+                timestamp: new Date().toISOString()
+              })
+            });
+
+            if (response.ok) {
+              Swal.fire(
+                'สำเร็จ!',
+                'บันทึกรางวัลเรียบร้อยแล้ว',
+                'success'
+              );
+              button.disabled = true;
+              button.textContent = 'คุณได้ร่วมกิจกรรมแล้ว';
+            } else {
+              throw new Error('Failed to save prize data');
+            }
+          } catch (error) {
+            console.error('Error saving prize data:', error);
+            Swal.fire(
+              'เกิดข้อผิดพลาด!',
+              'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+              'error'
+            );
+          }
+        }
+        
+        isDrawing = false;
+        button.style.opacity = '1';
+        button.style.cursor = 'pointer';
       }, 2000);
     }
+
+    initializeLiff();
   </script>
 </body>
 </html>
